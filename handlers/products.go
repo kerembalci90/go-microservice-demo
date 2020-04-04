@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"log"
+	"regexp"
+	"strconv"
 
 	"net/http"
 
@@ -27,6 +29,31 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method == http.MethodPut {
+		reg := regexp.MustCompile(`/([0-9]+)`)
+		g := reg.FindAllStringSubmatch(r.URL.Path, -1)
+
+		if len(g) != 1 {
+			http.Error(rw, "Invalid URI", http.StatusBadRequest)
+			return
+		}
+
+		if len(g[0]) != 2 {
+			http.Error(rw, "Invalid URI", http.StatusBadRequest)
+			return
+		}
+
+		idString := g[0][1]
+		id, err := strconv.Atoi(idString)
+		if err != nil {
+			http.Error(rw, "Invalid URI", http.StatusBadRequest)
+			return
+		}
+
+		p.UpdateProduct(id, rw, r)
+		return
+	}
+
 	rw.WriteHeader(http.StatusMethodNotAllowed)
 }
 
@@ -48,6 +75,25 @@ func (p *Products) CreateProduct(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "Unable to unmarshall JSON", http.StatusBadRequest)
 	}
 
-	p.log.Printf("Prod: %#v", product)
 	data.AddProduct(product)
+}
+
+func (p *Products) UpdateProduct(id int, rw http.ResponseWriter, r *http.Request) {
+	p.log.Println("Handle PUT Product request")
+	product := &data.Product{}
+	err := product.FromJSON(r.Body)
+	if err != nil {
+		http.Error(rw, "Unable to unmarshall JSON", http.StatusBadRequest)
+	}
+
+	err = data.UpdateProduct(id, product)
+	if err == data.ErrorProductNotFound {
+		http.Error(rw, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(rw, "Product not found", http.StatusInternalServerError)
+		return
+	}
 }
