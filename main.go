@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"microservices-demo/handlers"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/kerembalci90/go-microservice-demo/handlers"
 )
 
 func main() {

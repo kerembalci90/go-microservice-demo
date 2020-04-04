@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"log"
-	"microservices-demo/data"
+
 	"net/http"
+
+	"github.com/kerembalci90/go-microservice-demo/data"
 )
 
 type Products struct {
