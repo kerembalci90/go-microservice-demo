@@ -19,29 +19,35 @@ type Product struct {
 	DeletedOn   string  `json:"-"`
 }
 
+// FromJSON Converts a product from JSON format to data format
 func (p *Product) FromJSON(r io.Reader) error {
 	e := json.NewDecoder(r)
 	return e.Decode(p)
 }
 
+// Products denotes a list of product items
 type Products []*Product
 
+// ToJSON Converts the list of products to JSON format for output
 func (p *Products) ToJSON(w io.Writer) error {
 	e := json.NewEncoder(w)
 	return e.Encode(p)
 }
 
+// GetProducts Returns the list of products
 func GetProducts() Products {
 	return productList
 }
 
+// AddProduct Adds a new product to the product list
 func AddProduct(p *Product) {
 	p.ID = getNextProductID()
 	productList = append(productList, p)
 }
 
+// UpdateProduct Takes care of updating a product with the given id
 func UpdateProduct(id int, p *Product) error {
-	_, pos, err := findProductById(id)
+	_, pos, err := findProductByID(id)
 	if err != nil {
 		return err
 	}
@@ -51,9 +57,11 @@ func UpdateProduct(id int, p *Product) error {
 	return nil
 }
 
+// ErrorProductNotFound Custom error for denoting that a product is not found
 var ErrorProductNotFound = fmt.Errorf("Product not found")
 
-func findProductById(id int) (*Product, int, error) {
+// findProductById retuns the product and the position of it in the product list
+func findProductByID(id int) (*Product, int, error) {
 	for i, p := range productList {
 		if p.ID == id {
 			return p, i, nil

@@ -10,10 +10,12 @@ import (
 	"github.com/kerembalci90/go-microservice-demo/data"
 )
 
+// Products Struct that provides access to operating on Products
 type Products struct {
 	log *log.Logger
 }
 
+// NewProducts Factory function for returning a new instance of Products handler
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
@@ -57,6 +59,7 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusMethodNotAllowed)
 }
 
+// GetProducts Responsible for handling the return of a list of products
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.log.Println("Handle GET Products request")
 	lp := data.GetProducts()
@@ -67,6 +70,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// CreateProduct Responsible for handling a product creation
 func (p *Products) CreateProduct(rw http.ResponseWriter, r *http.Request) {
 	p.log.Println("Handle POST Product request")
 	product := &data.Product{}
@@ -78,6 +82,7 @@ func (p *Products) CreateProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(product)
 }
 
+// UpdateProduct Responsible for handling the update of an existing product
 func (p *Products) UpdateProduct(id int, rw http.ResponseWriter, r *http.Request) {
 	p.log.Println("Handle PUT Product request")
 	product := &data.Product{}
