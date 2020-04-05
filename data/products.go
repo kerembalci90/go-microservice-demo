@@ -11,7 +11,11 @@ import (
 )
 
 // Product denotes a product item for our coffee shop
+// swagger:model
 type Product struct {
+	// ID for the product
+	// required: true
+	// min: 1
 	ID          int     `json:"id"`
 	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
@@ -69,28 +73,40 @@ func AddProduct(p *Product) {
 
 // UpdateProduct Takes care of updating a product with the given id
 func UpdateProduct(id int, p *Product) error {
-	_, pos, err := findProductByID(id)
-	if err != nil {
-		return err
+	i := findIndexByProductID(id)
+	if i == -1 {
+		return ErrorProductNotFound
 	}
 
 	p.ID = id
-	productList[pos] = p
+	productList[i] = p
+	return nil
+}
+
+// DeleteProduct Deletes a product with the given id from the product list
+func DeleteProduct(id int) error {
+	i := findIndexByProductID(id)
+	if i == -1 {
+		return ErrorProductNotFound
+	}
+
+	productList = append(productList[:i], productList[i+1:])
 	return nil
 }
 
 // ErrorProductNotFound Custom error for denoting that a product is not found
 var ErrorProductNotFound = fmt.Errorf("Product not found")
 
-// findProductById retuns the product and the position of it in the product list
-func findProductByID(id int) (*Product, int, error) {
+// findIndexByProductID Finds the index of a product in the database
+// returns -1 when no product can be found
+func findIndexByProductID(id int) int {
 	for i, p := range productList {
 		if p.ID == id {
-			return p, i, nil
+			return i
 		}
 	}
 
-	return nil, -1, ErrorProductNotFound
+	return -1
 }
 
 func getNextProductID() int {

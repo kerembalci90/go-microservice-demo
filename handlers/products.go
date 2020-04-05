@@ -27,6 +27,26 @@ import (
 	"github.com/kerembalci90/go-microservice-demo/data"
 )
 
+// A list of products returned in the response
+// swagger:response productsResponse
+type productsResponseSwaggerWrapper struct {
+	// All products in the system
+	// in: body
+	Body []data.Product
+}
+
+// swagger:response noContent
+type productNoResponseSwaggerWrapper struct {
+}
+
+// swagger:parameters deleteProduct
+type productIDParameterSwaggerWrapper struct {
+	// ID of the product to be deleted from the database
+	// in: path
+	// required: true
+	ID int `json:"id"`
+}
+
 // Products Struct that provides access to operating on Products
 type Products struct {
 	log *log.Logger
@@ -36,6 +56,11 @@ type Products struct {
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
+
+// swagger:route GET /products products listProducts
+// Returns a list of products
+// responses:
+// 	200: productsResponse
 
 // GetProducts Responsible for handling the return of a list of products
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
@@ -78,6 +103,27 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(rw, "Product not found", http.StatusInternalServerError)
+		return
+	}
+}
+
+// swagger:route DELETE /products/{id} products deleteProducts
+// Deletes a product from the list of products
+// responses:
+// 	204: noContent
+
+func (p *Products) DeleteProduct(rw http.ResponseWriter, r *http.Request) {
+	p.log.Println("Handle DELETE Product request")
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
+		return
+	}
+
+	err = data.DeleteProduct(id)
+	if err != nil {
+		http.Error(rw, "Unable to delete product", http.StatusInternalServerError)
 		return
 	}
 }
